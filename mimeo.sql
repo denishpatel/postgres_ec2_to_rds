@@ -24,7 +24,6 @@ CREATE TABLE dblink_mapping (
     dbh_attr text,
     CONSTRAINT dblink_mapping_data_source_id_pkey PRIMARY KEY (data_source_id)
 );
-SELECT pg_catalog.pg_extension_config_dump('dblink_mapping', '');
 ALTER SEQUENCE dblink_mapping_data_source_id_seq OWNED BY dblink_mapping.data_source_id;
 
 CREATE TYPE refresh_type AS ENUM ('snap', 'inserter', 'updater', 'dml', 'logdel');
@@ -36,11 +35,9 @@ CREATE TABLE refresh_config (
     filter text[],
     condition text
 );
-SELECT pg_catalog.pg_extension_config_dump('refresh_config', '');
 CREATE RULE refresh_config_parent_nodata AS ON INSERT TO refresh_config DO INSTEAD NOTHING;
 
 CREATE TABLE refresh_config_snap (LIKE refresh_config INCLUDING ALL) INHERITS (refresh_config);
-SELECT pg_catalog.pg_extension_config_dump('refresh_config_snap', '');
 ALTER TABLE refresh_config_snap ADD CONSTRAINT refresh_config_snap_dblink_fkey FOREIGN KEY (dblink) REFERENCES dblink_mapping(data_source_id);
 ALTER TABLE refresh_config_snap ADD CONSTRAINT refresh_config_snap_dest_table_pkey PRIMARY KEY (dest_table);
 ALTER TABLE refresh_config_snap ADD COLUMN source_table text NOT NULL;
@@ -49,7 +46,6 @@ ALTER TABLE refresh_config_snap ALTER COLUMN type SET DEFAULT 'snap';
 ALTER TABLE refresh_config_snap ADD CONSTRAINT refresh_config_snap_type_check CHECK (type = 'snap');
 
 CREATE TABLE refresh_config_inserter (LIKE refresh_config INCLUDING ALL) INHERITS (refresh_config);
-SELECT pg_catalog.pg_extension_config_dump('refresh_config_inserter', '');
 ALTER TABLE refresh_config_inserter ADD CONSTRAINT refresh_config_inserter_dblink_fkey FOREIGN KEY (dblink) REFERENCES dblink_mapping(data_source_id);
 ALTER TABLE refresh_config_inserter ADD CONSTRAINT refresh_config_inserter_dest_table_pkey PRIMARY KEY (dest_table);
 ALTER TABLE refresh_config_inserter ADD COLUMN source_table text NOT NULL; 
@@ -62,7 +58,6 @@ ALTER TABLE refresh_config_inserter ALTER COLUMN type SET DEFAULT 'inserter';
 ALTER TABLE refresh_config_inserter ADD CONSTRAINT refresh_config_inserter_type_check CHECK (type = 'inserter');
 
 CREATE TABLE refresh_config_updater (LIKE refresh_config INCLUDING ALL) INHERITS (refresh_config);
-SELECT pg_catalog.pg_extension_config_dump('refresh_config_updater', '');
 ALTER TABLE refresh_config_updater ADD CONSTRAINT refresh_config_updater_dblink_fkey FOREIGN KEY (dblink) REFERENCES dblink_mapping(data_source_id);
 ALTER TABLE refresh_config_updater ADD CONSTRAINT refresh_config_updater_dest_table_pkey PRIMARY KEY (dest_table);
 ALTER TABLE refresh_config_updater ADD COLUMN source_table text NOT NULL;
@@ -77,7 +72,6 @@ ALTER TABLE refresh_config_updater ALTER COLUMN type SET DEFAULT 'updater';
 ALTER TABLE refresh_config_updater ADD CONSTRAINT refresh_config_updater_type_check CHECK (type = 'updater');  
 
 CREATE TABLE refresh_config_dml (LIKE refresh_config INCLUDING ALL) INHERITS (refresh_config);
-SELECT pg_catalog.pg_extension_config_dump('refresh_config_dml', '');
 ALTER TABLE refresh_config_dml ADD CONSTRAINT refresh_config_dml_dblink_fkey FOREIGN KEY (dblink) REFERENCES dblink_mapping(data_source_id);
 ALTER TABLE refresh_config_dml ADD CONSTRAINT refresh_config_dml_dest_table_pkey PRIMARY KEY (dest_table);
 ALTER TABLE refresh_config_dml ADD COLUMN source_table text NOT NULL;
@@ -88,7 +82,6 @@ ALTER TABLE refresh_config_dml ALTER COLUMN type SET DEFAULT 'dml';
 ALTER TABLE refresh_config_dml ADD CONSTRAINT refresh_config_dml_type_check CHECK (type = 'dml');    
 
 CREATE TABLE refresh_config_logdel (LIKE refresh_config INCLUDING ALL) INHERITS (refresh_config);
-SELECT pg_catalog.pg_extension_config_dump('refresh_config_logdel', '');
 ALTER TABLE refresh_config_logdel ADD CONSTRAINT refresh_config_logdel_dblink_fkey FOREIGN KEY (dblink) REFERENCES dblink_mapping(data_source_id);
 ALTER TABLE refresh_config_logdel ADD CONSTRAINT refresh_config_logdel_dest_table_pkey PRIMARY KEY (dest_table);
 ALTER TABLE refresh_config_logdel ADD COLUMN source_table text NOT NULL;
@@ -212,7 +205,7 @@ END IF;
 v_job_name := 'Refresh Snap: '||p_destination;
 
 SELECT nspname INTO v_dblink_schema FROM pg_namespace n, pg_extension e WHERE e.extname = 'dblink' AND e.extnamespace = n.oid;
-SELECT nspname INTO v_jobmon_schema FROM pg_namespace n, pg_extension e WHERE e.extname = 'pg_jobmon' AND e.extnamespace = n.oid;
+SELECT 'jobmon' INTO v_jobmon_schema;
 
 -- Set custom search path to allow easier calls to other functions, especially job logging
 SELECT current_setting('search_path') INTO v_old_search_path;
@@ -429,7 +422,7 @@ END IF;
 v_job_name := 'Refresh Inserter: '||p_destination;
 
 SELECT nspname INTO v_dblink_schema FROM pg_namespace n, pg_extension e WHERE e.extname = 'dblink' AND e.extnamespace = n.oid;
-SELECT nspname INTO v_jobmon_schema FROM pg_namespace n, pg_extension e WHERE e.extname = 'pg_jobmon' AND e.extnamespace = n.oid;
+SELECT 'jobmon' INTO v_jobmon_schema;
 
 -- Set custom search path to allow easier calls to other functions, especially job logging
 SELECT current_setting('search_path') INTO v_old_search_path;
@@ -647,7 +640,7 @@ END IF;
 v_job_name := 'Refresh Updater: '||p_destination;
 
 SELECT nspname INTO v_dblink_schema FROM pg_namespace n, pg_extension e WHERE e.extname = 'dblink' AND e.extnamespace = n.oid;
-SELECT nspname INTO v_jobmon_schema FROM pg_namespace n, pg_extension e WHERE e.extname = 'pg_jobmon' AND e.extnamespace = n.oid;
+SELECT 'jobmon' INTO v_jobmon_schema;
 
 -- Set custom search path to allow easier calls to other functions, especially job logging
 SELECT current_setting('search_path') INTO v_old_search_path;
@@ -895,7 +888,7 @@ END IF;
 v_job_name := 'Refresh DML: '||p_destination;
 
 SELECT nspname INTO v_dblink_schema FROM pg_namespace n, pg_extension e WHERE e.extname = 'dblink' AND e.extnamespace = n.oid;
-SELECT nspname INTO v_jobmon_schema FROM pg_namespace n, pg_extension e WHERE e.extname = 'pg_jobmon' AND e.extnamespace = n.oid;
+SELECT 'jobmon' INTO v_jobmon_schema;
 
 -- Set custom search path to allow easier calls to other functions, especially job logging
 SELECT current_setting('search_path') INTO v_old_search_path;
@@ -1117,7 +1110,7 @@ END IF;
 v_job_name := 'Refresh Log Del: '||p_destination;
 
 SELECT nspname INTO v_dblink_schema FROM pg_namespace n, pg_extension e WHERE e.extname = 'dblink' AND e.extnamespace = n.oid;
-SELECT nspname INTO v_jobmon_schema FROM pg_namespace n, pg_extension e WHERE e.extname = 'pg_jobmon' AND e.extnamespace = n.oid;
+SELECT 'jobmon' INTO v_jobmon_schema;
 
 -- Set custom search path to allow easier calls to other functions, especially job logging
 SELECT current_setting('search_path') INTO v_old_search_path;

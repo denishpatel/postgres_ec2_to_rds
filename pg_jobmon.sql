@@ -1,6 +1,6 @@
-CREATE SCHEMA pg_jobmon;
+CREATE SCHEMA jobmon;
 
-SET search_path TO  pg_jobmon;
+SET search_path TO  jobmon;
 
 CREATE TABLE job_log (
     job_id bigint NOT NULL,
@@ -53,14 +53,12 @@ CREATE TABLE job_check_log (
     job_id bigint NOT NULL,
     job_name text NOT NULL
 );
-SELECT pg_catalog.pg_extension_config_dump('job_check_log', '');
 
 
 CREATE TABLE dblink_mapping (
     username text NOT NULL,
     pwd text
 );
-SELECT pg_catalog.pg_extension_config_dump('dblink_mapping', '');
 
 
 CREATE TABLE job_check_config (
@@ -72,7 +70,6 @@ CREATE TABLE job_check_config (
     sensitivity smallint DEFAULT 0 NOT NULL,
     CONSTRAINT job_check_config_job_name_pkey PRIMARY KEY (job_name)
 );
-SELECT pg_catalog.pg_extension_config_dump('job_check_config', '');
 
 
 CREATE TABLE job_status_text (
@@ -80,7 +77,7 @@ CREATE TABLE job_status_text (
     alert_text  text NOT NULL,
     CONSTRAINT job_status_text_alert_code_pkey PRIMARY KEY (alert_code)
 );
-SELECT pg_catalog.pg_extension_config_dump('job_status_text', '');
+
 INSERT INTO job_status_text (alert_code, alert_text) VALUES (1, 'OK');
 INSERT INTO job_status_text (alert_code, alert_text) VALUES (2, 'WARNING');
 INSERT INTO job_status_text (alert_code, alert_text) VALUES (3, 'CRITICAL');
