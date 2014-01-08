@@ -8,7 +8,6 @@ CREATE TABLE mviews (
     last_refresh timestamp with time zone,
     CONSTRAINT mviews_mv_name_pkey PRIMARY KEY (mv_name)
 );
-SELECT pg_catalog.pg_extension_config_dump('mviews', '');
 
 CREATE SEQUENCE dblink_mapping_data_source_id_seq
     START WITH 1
